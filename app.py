@@ -6,12 +6,14 @@ from flask_sqlalchemy import SQLAlchemy
 
 from db_models import db, User, Manuscript, Page, Transcription, TokenCache
 from config import Config
+import commands
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 CORS(app)
 db.init_app(app)
+commands.init_app(app)
 
 @app.route('/')
 def home():
