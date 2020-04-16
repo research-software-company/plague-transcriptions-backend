@@ -21,7 +21,7 @@ class Manuscript(db.Model):
     '''
     __tablename__ = "manuscripts"
     id = db.Column(db.Integer, primary_key=True)
-    heb_name = db.Column(db.String(255))
+    heb_name = db.Column(db.String(255), unique=True)
     eng_name = db.Column(db.String(255))
     estimated_date = db.Column(db.String(50))
     shelf_no = db.Column(db.String(100))
