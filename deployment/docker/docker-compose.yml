@@ -24,6 +24,8 @@ services:
     container_name: plague-backend-docker
     environment:
       - SQLALCHEMY_DATABASE_URI=postgres://postgres:postgres@db/plague-transcription
+    ports:
+      - "5000:5000"
 
 volumes:
   db:
