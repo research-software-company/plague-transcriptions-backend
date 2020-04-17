@@ -1,6 +1,6 @@
 env/
 __pycache__/
 .venv/
-.vscode/
+.vscode/settings.json
 *.db
 instance/override.cfg
