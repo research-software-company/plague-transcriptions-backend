@@ -65,7 +65,7 @@ class Transcription(db.Model):
     page_id = db.Column(db.Integer, db.ForeignKey("pages.id"))
     user_email = db.Column(db.String(255), db.ForeignKey("users.email"))
     partial = db.Column(db.Boolean, server_default="1")
-    inital_transcription_id = db.Column(db.Integer, db.ForeignKey("transcriptions.id"))
+    initial_transcription_id = db.Column(db.Integer, db.ForeignKey("transcriptions.id"))
     transcription = db.Column(db.Text)
     start_time = db.Column(db.TIMESTAMP, server_default=db.func.now())
     save_time = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
