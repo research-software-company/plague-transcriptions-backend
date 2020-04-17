@@ -2,6 +2,7 @@
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 
 # from flask_user import login_required, UserManager, UserMixin, current_user
 
@@ -41,6 +42,7 @@ class Page(db.Model):
     __tablename__ = "pages"
     id = db.Column(db.Integer, primary_key=True)
     manuscript_id = db.Column(db.Integer, db.ForeignKey("manuscripts.id"))
+    manuscript = relationship("Manuscript")
     page_name = db.Column(db.String(255))
     page_number = db.Column(db.Integer)
     iiif_url = db.Column(db.String(255), unique=True)
