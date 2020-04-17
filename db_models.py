@@ -36,6 +36,7 @@ class Page(db.Model):
     '''
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
+    manuscript_id = db.Column(db.Integer, db.ForeignKey('manuscripts.id'))
     page_name = db.Column(db.String(255))
     page_number = db.Column(db.Integer)
     iiif_url = db.Column(db.String(255))
