@@ -85,7 +85,7 @@ def start_transcription(page_id):
     initial = get_transcription_id_base(page_id)
     if initial:
         initial_id = initial.id
-        suggestion = initial.text
+        suggestion = initial.transcription
     new_tr = Transcription(
         page_id=page_id,
         user_email=user_email,
