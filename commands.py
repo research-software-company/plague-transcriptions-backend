@@ -3,6 +3,7 @@ from flask.cli import with_appcontext
 from flask.globals import current_app
 from openpyxl import load_workbook
 from db_models import db, Manuscript
+import asyncio
 
 @click.command()
 @click.argument('filename')
@@ -13,29 +14,53 @@ def ingest(filename, sheet):
         wb = load_workbook(filename)
         return wb.get_sheet_by_name(wb.get_sheet_names()[sheet-1])
 
-    def process_row(row):
-        heb_name = row[0]
-        iiif_manifest_url = row[5]
-        if not iiif_manifest_url:
-            return
+    def clean_decimal(value):
+        if type(value) == float:
+            return int(value)
+        return value
 
-        manuscript = Manuscript.query.filter_by(heb_name=heb_name).first()
-        if not manuscript:
-            manuscript = Manuscript()
-            manuscript.heb_name = heb_name
-            db.session.add(manuscript)
-        manuscript.eng_name = None  # No english name for now
-        manuscript.estimated_date = row[1]
-        manuscript.shelf_no = row[2]
-        manuscript.catalog_no = row[3]
-        manuscript.external_url = row[4]
-        manuscript.iiif_manifest_url = iiif_manifest_url
-        manuscript.notes = row[8]
+    created = updated = 0
+    async def process_row(row):
+        nonlocal created, updated
+        try:
+            heb_name = row[0].value
+            print(f'{heb_name}...', end='')
+            iiif_manifest_url = row[5].value
+            if not iiif_manifest_url:
+                print('no manifest', end='')
+                return
 
+            manuscript = Manuscript.query.filter_by(heb_name=heb_name).first()
+            if not manuscript:
+                print('creating', end='')
+                created += 1
+                manuscript = Manuscript()
+                manuscript.heb_name = heb_name
+                db.session.add(manuscript)
+            else:
+                updated += 1
+                print('updating', end='')
+            manuscript.eng_name = None  # No english name for now
+            manuscript.estimated_date = clean_decimal(row[1].value)
+            manuscript.shelf_no = clean_decimal(row[2].value)
+            manuscript.catalog_no = clean_decimal(row[3].value)
+            manuscript.external_url = row[4].value
+            manuscript.iiif_manifest_url = iiif_manifest_url
+            manuscript.notes = row[8].value
+        except Exception as e:
+            print(str(e), end='')
+        finally:
+
+            print()
+
+    async def process_sheet(sheet):
+        row_tasks = [process_row(row) for row in sheet.iter_rows(min_row=2)]
+        await asyncio.wait(row_tasks)
+        
     sheet = get_sheet()
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        process_row(row)
+    asyncio.run(process_sheet(sheet))
     db.session.commit()
+    print(f'Created {created} manuscripts, updated {updated} manuscripts')
 
 
 def init_app(app):
