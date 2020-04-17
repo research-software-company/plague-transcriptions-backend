@@ -38,7 +38,7 @@ class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_name = db.Column(db.String(255))
     page_number = db.Column(db.Integer)
-    iiif_url = db.Column(db.String(255))
+    iiif_url = db.Column(db.String(255), unique=True)
     page_width = db.Column(db.Integer)
     page_height = db.Column(db.Integer)
     dpi = db.Column(db.Integer)

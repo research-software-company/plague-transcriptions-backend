@@ -4,6 +4,8 @@ from flask.globals import current_app
 from openpyxl import load_workbook
 from db_models import db, Manuscript
 import asyncio
+import sys
+import aiohttp
 
 @click.command()
 @click.argument('filename')
@@ -24,10 +26,8 @@ def ingest(filename, sheet):
         nonlocal created, updated
         try:
             heb_name = row[0].value
-            print(f'{heb_name}...', end='')
             iiif_manifest_url = row[5].value
             if not iiif_manifest_url:
-                print('no manifest', end='')
                 return
 
             manuscript = Manuscript.query.filter_by(heb_name=heb_name).first()
@@ -39,7 +39,6 @@ def ingest(filename, sheet):
                 db.session.add(manuscript)
             else:
                 updated += 1
-                print('updating', end='')
             manuscript.eng_name = None  # No english name for now
             manuscript.estimated_date = clean_decimal(row[1].value)
             manuscript.shelf_no = clean_decimal(row[2].value)
@@ -47,11 +46,18 @@ def ingest(filename, sheet):
             manuscript.external_url = row[4].value
             manuscript.iiif_manifest_url = iiif_manifest_url
             manuscript.notes = row[8].value
-        except Exception as e:
-            print(str(e), end='')
-        finally:
 
-            print()
+            await process_manifest(manuscript)
+        except Exception as e:
+            print("Can't process manifest: ", e, file=sys.stderr)
+
+    async def process_manifest(manuscript):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(manuscript.iiif_manifest_url) as response:
+                manifest = await response.json()
+        for canvas in manifest['sequences'][0]['canvases']:
+            url = canvas['@id']
+        
 
     async def process_sheet(sheet):
         row_tasks = [process_row(row) for row in sheet.iter_rows(min_row=2)]
