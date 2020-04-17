@@ -9,8 +9,9 @@ from config import Config
 from flask_migrate import Migrate
 import commands
 
-app = Flask(__name__)
+app = Flask(__name__, instance_relative_config=True)
 app.config.from_object(Config)
+app.config.from_pyfile('override.cfg')
 
 CORS(app)
 db.init_app(app)

@@ -1,0 +1,22 @@
+# Start a local postgres instance, for development with postgres.
+# This file should *not* be used when deploying the backend, as the passwords are pretty easy to guess, and not
+# stored in a secure way.
+version: '3.7'
+
+services:
+  db:
+    image: postgres:11
+    restart: always
+    container_name: plague-database
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=plague-transcription
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - "25432:5432"
+
+volumes:
+  db:
+    name: plague-database-volume

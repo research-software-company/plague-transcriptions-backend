@@ -14,4 +14,5 @@ class Config(object):
     
     # Since we've got lots of Hebrew JSON
     JSON_AS_ASCII = False
+    
 
