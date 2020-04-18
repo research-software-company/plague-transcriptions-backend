@@ -11,7 +11,10 @@ import commands
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object(Config)
-app.config.from_pyfile('override.cfg')
+try:
+    app.config.from_pyfile('override.cfg')
+except FileNotFoundError:
+    pass
 
 CORS(app)
 db.init_app(app)
