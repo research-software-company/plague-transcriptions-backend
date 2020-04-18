@@ -15,3 +15,7 @@ The backend is deployed in a Docker container. We want to make sure it works by 
 
 Note that you will need to apply migrations to the database and ingest the manuscripts before you can really work with
 the backend. The `init-docker-env.py` script does this for you, just run it.
+
+## Running a production-like environment
+The production environment is a Postgres database hosted by SQL Elephant and a backend running as an Azure Web App.
+The `production-like` folder has a `docker-compose.yml` file that starts the backend. You will need to set the environment variable `SQLALCHEMY_DATABASE_URI` to the right URI.

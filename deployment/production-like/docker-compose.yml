@@ -1,0 +1,13 @@
+# Start a local postgres instance, for development with postgres.
+# This file should *not* be used when deploying the backend, as the passwords are pretty easy to guess, and not
+# stored in a secure way.
+version: '3.7'
+
+services:
+  backend:
+    image: chelem/plague-backend:latest
+    container_name: plague-backend-prod
+    environment:
+      - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
+    ports:
+      - "5000:80"

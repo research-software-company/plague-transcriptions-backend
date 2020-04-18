@@ -41,7 +41,7 @@ def get_transcription_id_base(page_id: int) -> int:
 
 @app.route("/")
 def home():
-    return "Nothing to see here"
+    return "How do you like them apples?"
 
 
 @app.route("/pending", methods=["GET"])
