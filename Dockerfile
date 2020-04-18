@@ -13,4 +13,4 @@ RUN pip install -r src/requirements.txt
 COPY . /src
 WORKDIR /src
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"] 
+CMD ["gunicorn", "-b", "0.0.0.0:80", "wsgi:app"] 
