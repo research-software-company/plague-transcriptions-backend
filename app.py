@@ -50,7 +50,7 @@ def get_pending_manuscripts():
     user_email = request.values.get('user_email')  # TODO: swap this for the tokens
 
     # TODO: more advanced ordering mechanism than this
-    LIMIT_MSS = 5
+    # LIMIT_MSS = 5
 
     user_pages = db.session.query(Transcription.page_id).filter(Transcription.user_email == user_email)
     mss = db.session.query(Manuscript)
@@ -87,6 +87,7 @@ def start_transcription(page_id):
         initial_text = exits.initial_transcription.transcription if exists.initial_transcription else None
         payload['suggestion'] = {'id': exists.initial_transcription_id, 'text': initial_text}
         payload['page'] = object_as_dict(exists.page)
+        payload['manuscript'] = object_as_dict(exists.page.manuscript)
         return jsonify(payload)
 
     initial_id = None
@@ -109,6 +110,7 @@ def start_transcription(page_id):
     payload = object_as_dict(new_tr)
     payload['suggestion'] = {'id': initial_id, 'text': suggestion}
     payload['page'] = object_as_dict(new_tr.page)
+    payload['manuscript'] = object_as_dict(new_tr.page.manuscript)
     return jsonify(payload)
 
 
@@ -132,7 +134,9 @@ def save_new_transcription(transcription_id):
 @app.route('/page/<int:page_id>', methods=['GET'])
 def get_page(page_id):
     page = db.session.query(Page).filter(Page.id == page_id).first()
-    return jsonify(object_as_dict(page))
+    payload = object_as_dict(page)
+    payload['manuscript'] = object_as_dict(page.manuscript)
+    return jsonify(payload)
 
 
 @app.route('/manuscript/<int:manuscript_id>', methods=['GET'])
