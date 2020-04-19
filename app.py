@@ -47,7 +47,7 @@ def home():
 @app.route("/pending", methods=["GET"])
 def get_pending_manuscripts():
     """ List of manuscripts waiting for the user’s transcriptions, ordered by priority. """
-    user_email = request.values.get('user_email') # TODO: swap this for the tokens
+    user_email = request.values.get('user_email')  # TODO: swap this for the tokens
 
     # TODO: more advanced ordering mechanism than this
     LIMIT_MSS = 5
@@ -103,6 +103,7 @@ def start_transcription(page_id):
 
     payload = object_as_dict(new_tr)
     payload['suggestion'] = {'id': initial_id, 'text': suggestion}
+    payload['page'] = object_as_dict(new_tr.page)
     return jsonify(payload)
 
 
@@ -121,6 +122,42 @@ def save_new_transcription(transcription_id):
     transcription.partial = False
     db.session.commit()
     return jsonify(success=True)
+
+
+@app.route('/page/<int:page_id>', methods=['GET'])
+def get_page(page_id):
+    page = db.session.query(Page).filter(Page.id == page_id).first()
+    return jsonify(object_as_dict(page))
+
+
+@app.route('/manuscript/<int:manuscript_id>', methods=['GET'])
+def get_manuscript(manuscript_id):
+    user_email = request.values.get("user_email")  # TODO: swap this for the tokens
+    manuscript = db.session.query(Manuscript).filter(Manuscript.id == manuscript_id).first()
+    user_pages_complete = db.session.query(Transcription.page_id).filter(
+        Transcription.user_email == user_email).filter(Transcription.partial == False).all()
+    user_pages_partial = db.session.query(Transcription.page_id).filter(
+        Transcription.user_email == user_email).filter(Transcription.partial == True).all()
+    pages = db.session.query(Page).filter(Page.manuscript_id == manuscript_id)
+
+    payload = object_as_dict(manuscript)
+    user_pages_complete = [x[0] for x in user_pages_complete]
+    user_pages_partial = [x[0] for x in user_pages_partial]
+    payload['pages'] = []
+    print(user_pages_complete, user_pages_partial)
+    for page in pages:
+        # status = 'none'
+        if page.id in user_pages_complete:
+            status = 'complete'
+        elif page.id in user_pages_partial:
+            status = 'partial'
+        # TODO: add not required = enough other users have done it
+        else:
+            status = 'none'
+        pg = object_as_dict(page)
+        pg['status'] = status
+        payload['pages'].append(pg)
+    return jsonify(payload)
 
 
 @app.route("/manuscripts")
