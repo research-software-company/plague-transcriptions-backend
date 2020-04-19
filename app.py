@@ -58,9 +58,10 @@ def get_pending_manuscripts():
     for ms in mss:
         pg_ms = db.session.query(Page).filter(Page.manuscript_id == ms.id).filter(Page.id.notin_(user_pages))
         l = [object_as_dict(p) for p in pg_ms]
-        d = object_as_dict(ms)
-        d['pages'] = l
-        payload['manuscript'].append(d)
+        if l:
+            d = object_as_dict(ms)
+            d['pages'] = l
+            payload['manuscript'].append(d)
 
     return jsonify(payload)
 
