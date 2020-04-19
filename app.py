@@ -83,7 +83,11 @@ def start_transcription(page_id):
         .first()
     )
     if exists:
-        return jsonify(object_as_dict(exists))
+        payload = object_as_dict(exists)
+        initial_text = exits.initial_transcription.transcription if exists.initial_transcription else None
+        payload['suggestion'] = {'id': exists.initial_transcription_id, 'text': initial_text}
+        payload['page'] = object_as_dict(exists.page)
+        return jsonify(payload)
 
     initial_id = None
     suggestion = None
