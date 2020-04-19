@@ -63,6 +63,8 @@ class Transcription(db.Model):
     __tablename__ = "transcriptions"
     id = db.Column(db.Integer, primary_key=True)
     page_id = db.Column(db.Integer, db.ForeignKey("pages.id"))
+    page = relationship('Page')
+
     user_email = db.Column(db.String(255), db.ForeignKey("users.email"))
     partial = db.Column(db.Boolean, server_default="1")
     initial_transcription_id = db.Column(db.Integer, db.ForeignKey("transcriptions.id"))
@@ -74,6 +76,8 @@ class Transcription(db.Model):
     initial_transcription = db.relationship(
         "Transcription", backref="children", remote_side="Transcription.id"
     )
+
+    user = relationship("User")
 
 
 # db.create_all()
