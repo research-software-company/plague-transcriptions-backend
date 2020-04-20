@@ -7,6 +7,13 @@ import asyncio
 import sys
 import aiohttp
 
+
+@click.command()
+@with_appcontext
+def create():
+    db.create_all()
+
+
 @click.command()
 @click.argument('filename')
 @click.option('--sheet', default=1, help='Sheet to use in a multisheet file')
@@ -23,6 +30,7 @@ def ingest(filename, sheet):
 
     created_manuscripts = updated_manuscripts = 0
     created_pages = updated_pages = 0
+
     async def process_row(row):
         nonlocal created_manuscripts, updated_manuscripts
         try:
@@ -61,7 +69,8 @@ def ingest(filename, sheet):
             page = Page.query.filter_by(iiif_url=url).first()
             if page:
                 if page.manuscript_id != manuscript.id:
-                    raise ValueError(f'Page for {url} found in manuscript {manuscript.heb_name}, but aready belongs to {page.manuscript.heb_name}')
+                    raise ValueError(
+                        f'Page for {url} found in manuscript {manuscript.heb_name}, but aready belongs to {page.manuscript.heb_name}')
                 updated_pages += 1
             else:
                 page = Page()
@@ -73,12 +82,11 @@ def ingest(filename, sheet):
             page.page_name = canvas['label']
             page.page_width = canvas['width']
             page.page_height = canvas['height']
-        
 
     async def process_sheet(sheet):
         row_tasks = [process_row(row) for row in sheet.iter_rows(min_row=2)]
         await asyncio.wait(row_tasks)
-        
+
     sheet = get_sheet()
     asyncio.run(process_sheet(sheet))
     db.session.commit()
@@ -87,3 +95,4 @@ def ingest(filename, sheet):
 
 def init_app(app):
     app.cli.add_command(ingest)
+    app.cli.add_command(create)
