@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from os import environ
 
+
 class Config(object):
     """ Flask application config """
 
@@ -12,8 +13,9 @@ class Config(object):
     # Flask-SQLAlchemy settings
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI") or "sqlite:///plague-transcriptions.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
-    
+
     # Since we've got lots of Hebrew JSON
     JSON_AS_ASCII = False
 
-
+    # Version
+    VERSION = '0.0.1'
