@@ -83,6 +83,7 @@ def run_migrations_online():
             connection=connection,
             target_metadata=target_metadata,
             process_revision_directives=process_revision_directives,
+            render_as_batch=config.get_main_option('sqlalchemy.url').startswith('sqlite:///'), # From https://github.com/miguelgrinberg/Flask-Migrate/issues/61
             **current_app.extensions['migrate'].configure_args
         )
 
