@@ -3,6 +3,7 @@
 from flask import Flask, Response, jsonify, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy, inspect
+from sqlalchemy import func
 
 from db_models import db, User, Manuscript, Page, Transcription, TokenCache
 from config import Config
@@ -62,6 +63,26 @@ def get_pending_manuscripts():
             d = object_as_dict(ms)
             d['pages'] = l
             payload['manuscript'].append(d)
+
+    return jsonify(payload)
+
+
+@app.route("/featured", methods=["GET"])
+def get_featured_manuscripts():
+    """ List of 3 featured manuscripts, for the carousel view. """
+    LIMIT_MSS = 3
+    # user_email = request.values.get('user_email')  # TODO: swap this for the tokens
+
+    # TODO: curated system for what's featured
+    nocover_pages = db.session.query(Page.manuscript_id).filter(Page.page_name != 'Front Cover')
+    mss = db.session.query(Manuscript).filter(Manuscript.id.in_(nocover_pages)).order_by(func.random()).limit(LIMIT_MSS)
+    payload = {'manuscript': []}
+    for ms in mss:
+        # TODO: get the key page for display
+        pg_ms = db.session.query(Page).filter(Page.manuscript_id == ms.id).filter(Page.page_name != 'Front Cover').first()
+        d = object_as_dict(ms)
+        d['page'] = object_as_dict(pg_ms)
+        payload['manuscript'].append(d)
 
     return jsonify(payload)
 
