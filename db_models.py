@@ -49,6 +49,8 @@ class Page(db.Model):
     page_width = db.Column(db.Integer)
     page_height = db.Column(db.Integer)
     dpi = db.Column(db.Integer)
+    # Not in use for now, but we may use this in case we move data from Transcription upstream
+    image_pages = db.Column(db.Integer)
 
 
 class TokenCache(db.Model):  # NOTE: this may be moved to some sort of cache system?
@@ -68,7 +70,14 @@ class Transcription(db.Model):
     user_email = db.Column(db.String(255), db.ForeignKey("users.email"))
     partial = db.Column(db.Boolean, server_default="1")
     initial_transcription_id = db.Column(db.Integer, db.ForeignKey("transcriptions.id"))
-    transcription = db.Column(db.Text)
+
+    # April 20th: CHANGED: now we have multicol
+    # All of these are nullable due to headless initialization
+    num_pages = db.Column(db.Integer)
+    transcription1 = db.Column(db.Text)
+    transcription2 = db.Column(db.Text)
+    notes1 = db.Column(db.Text)
+    notes2 = db.Column(db.Text)
     start_time = db.Column(db.TIMESTAMP, server_default=db.func.now())
     save_time = db.Column(db.TIMESTAMP, onupdate=db.func.current_timestamp())
 
@@ -79,5 +88,3 @@ class Transcription(db.Model):
 
     user = relationship("User")
 
-
-# db.create_all()

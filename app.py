@@ -141,23 +141,26 @@ def start_transcription(page_id):
     )
     if exists:
         payload = object_as_dict(exists)
-        initial_text = exists.initial_transcription.transcription if exists.initial_transcription else None
-        payload['suggestion'] = {'id': exists.initial_transcription_id, 'text': initial_text}
+        initial_text1 = exists.initial_transcription.transcription1 if exists.initial_transcription else None
+        initial_text2 = exists.initial_transcription.transcription2 if exists.initial_transcription else None
+        payload['suggestion'] = {'id': exists.initial_transcription_id, 'text1': initial_text1, 'text2': initial_text2}
         payload['page'] = object_as_dict(exists.page)
         payload['manuscript'] = object_as_dict(exists.page.manuscript)
         return jsonify(payload)
 
     initial_id = None
-    suggestion = None
+    suggestion1 = None
+    suggestion2 = None
     initial = get_transcription_id_base(page_id)
     if initial:
         initial_id = initial.id
-        suggestion = initial.transcription
+        suggestion = initial.transcription1
+        suggestion = initial.transcription2
     new_tr = Transcription(
         page_id=page_id,
         user_email=user_email,
+        num_pages=initial.num_pages if initial else None,
         partial=True,
-        transcription="",
         initial_transcription_id=initial_id,
     )
 
@@ -165,7 +168,7 @@ def start_transcription(page_id):
     db.session.commit()
 
     payload = object_as_dict(new_tr)
-    payload['suggestion'] = {'id': initial_id, 'text': suggestion}
+    payload['suggestion'] = {'id': initial_id, 'text1': suggestion1, 'text2': suggestion2}
     payload['page'] = object_as_dict(new_tr.page)
     payload['manuscript'] = object_as_dict(new_tr.page.manuscript)
     return jsonify(payload)
@@ -182,7 +185,11 @@ def save_new_transcription(transcription_id):
     if transcription.user_email != user_email or transcription.partial != True:
         return jsonify(), 404
 
-    transcription.transcription = request.values.get('text')
+    transcription.transcription1 = request.values.get('text1')
+    transcription.transcription2 = request.values.get('text2')
+    transcription.notes1 = request.values.get('notes1')
+    transcription.notes2 = request.values.get('notes2')
+    transcription.num_pages = request.values.get('num_pages')
     transcription.partial = False
     db.session.commit()
     return jsonify(success=True)
@@ -238,6 +245,11 @@ def get_pages():
     ''' NOTE: this endpoint isn't in the spec, here for debugging '''
     pgs = db.session.query(Page).all()
     return jsonify([object_as_dict(p) for p in pgs])
+
+@app.route('/info')
+def get_version():
+    ''' Current version of app '''
+    return jsonify(version=app.config.get('VERSION'))
 
 
 if __name__ == "__main__":
