@@ -18,4 +18,4 @@ class Config(object):
     JSON_AS_ASCII = False
 
     # Version
-    VERSION = '0.0.1'
+    VERSION = '0.9.1'
