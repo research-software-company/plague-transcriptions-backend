@@ -36,7 +36,8 @@ def ingest(filename, sheet):
         try:
             heb_name = row[0].value
             iiif_manifest_url = row[5].value
-            if not iiif_manifest_url:
+            relevant_page_numbers = row[9].value
+            if not iiif_manifest_url or not relevant_page_numbers:
                 return
 
             manuscript = Manuscript.query.filter_by(heb_name=heb_name).first()
@@ -54,6 +55,7 @@ def ingest(filename, sheet):
             manuscript.external_url = row[4].value
             manuscript.iiif_manifest_url = iiif_manifest_url
             manuscript.notes = row[8].value
+            manuscript.relevant_page_numbers = relevant_page_numbers
 
             await process_manifest(manuscript)
         except Exception as e:
@@ -61,10 +63,19 @@ def ingest(filename, sheet):
 
     async def process_manifest(manuscript):
         nonlocal created_pages, updated_pages
+
+        try:
+            first_page, last_page = [int(p) for p in manuscript.relevant_page_numbers.split('-')]
+        except:
+            raise ValueError(f'Badly formatted pages {manuscript.relevant_page_numbers} in {manuscript.heb_name}')
+
         async with aiohttp.ClientSession() as session:
             async with session.get(manuscript.iiif_manifest_url) as response:
                 manifest = await response.json()
         for i, canvas in enumerate(manifest['sequences'][0]['canvases']):
+            page_number = i + 1  # Pages are 1-based
+            if page_number < first_page or page_number > last_page:
+                continue
             url = canvas['@id']
             page = Page.query.filter_by(iiif_url=url).first()
             if page:
@@ -78,7 +89,7 @@ def ingest(filename, sheet):
                 page.iiif_url = url
                 db.session.add(page)
                 created_pages += 1
-            page.page_number = i + 1
+            page.page_number = page_number
             page.page_name = canvas['label']
             page.page_width = canvas['width']
             page.page_height = canvas['height']

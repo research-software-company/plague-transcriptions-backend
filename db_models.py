@@ -33,6 +33,7 @@ class Manuscript(db.Model):
     iiif_manifest_url = db.Column(db.String(255))
     license = db.Column(db.Text)
     notes = db.Column(db.Text)
+    relevant_page_numbers = db.Column(db.String(20)) 
 
 
 class Page(db.Model):
